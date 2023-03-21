@@ -13,6 +13,7 @@ class User(model):
   last_login = col(db.String)
   image = col(db.String)
   fs_uniquifier = col(db.String(128), unique=True, nullable=False) 
+  verified = col(db.Integer)
   about = col(db.String)
   posts = db.relationship("Post")
   followers = db.relationship("Followers", foreign_keys="Followers.to_id")

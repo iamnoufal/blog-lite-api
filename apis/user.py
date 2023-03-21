@@ -108,8 +108,8 @@ class UserAPI(Resource):
     user.about = args.get('about')
     user.created_on = str(datetime.today())[:16]
     user.last_login = str(datetime.today())[:16]
-    user.fs_uniquifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k=128)).lower()
-    mail_template = render_template('create-account.html', user = user)
+    user.fs_uniquifier = ''.join(random.choices(string.digits, k=6))
+    mail_template = render_template('verify-account.html', user = user)
     try:
       db.session.add(user)
       db.session.commit()
@@ -125,7 +125,7 @@ class UserAPI(Resource):
         error_msg = "Email already exists. Please use a different Email ID or login with this Email ID"
       raise DuplicateError(code=error_code, emsg=error_msg)
     else:
-      return user.fs_uniquifier
+      return 200
     
   def put(self):
     cookie = request.headers.get('Cookie')

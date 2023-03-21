@@ -45,6 +45,8 @@ class AuthAPI(Resource):
       raise NotFoundError(code=404, emsg="User with the entered User ID/Email doesn't exist")
     else:
       if user.password == password:
+        if len(user.fs_uniquifier) == 6:
+          return '0'
         return user.fs_uniquifier
       raise ValidationError(code=401, emsg="Incorrect password")
 
