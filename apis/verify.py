@@ -12,7 +12,7 @@ import random
 import string
 
 user_verify_input_fields = reqparse.RequestParser()
-user_verify_input_fields.add_argument('token')
+user_verify_input_fields.add_argument('otp')
 
 class VerifyAPI(Resource):
   def get(self, user_id):
@@ -33,7 +33,7 @@ class VerifyAPI(Resource):
     try: 
       user = User.query.filter_by(user_id = user_id).one()
       args = user_verify_input_fields.parse_args()
-      if user.fs_uniquifier == args.get('token'):
+      if user.fs_uniquifier == args.get('otp'):
         user.fs_uniquifier = ''.join(random.choices(string.ascii_lowercase + string.digits, k=128))
         db.session.commit()
       else:
