@@ -24,7 +24,7 @@ class VerifyAPI(Resource):
       raise NotFoundError(code = 404, emsg = "User ID doesn't exist on our database.")
     else:
       mail_template = render_template('verify-account.html', user = user)
-      msg = Message(subject="Verify your account | Blog Lite")
+      msg = Message(subject="Verify your account | Blog Lite", recipients=[user.email], sender="noufal24rahman@gmail.com")
       msg.html = mail_template
       mail.send(msg)
       return 200, "Verification mail sent"
@@ -43,4 +43,4 @@ class VerifyAPI(Resource):
     except exc.NoResultFound:
       raise NotFoundError(code=404, emsg="Invalid User ID / Token. Please try again later")
     else:
-      return 200, user.fs_uniquifier
+      return user.fs_uniquifier

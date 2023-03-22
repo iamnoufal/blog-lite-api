@@ -113,7 +113,7 @@ class UserAPI(Resource):
     try:
       db.session.add(user)
       db.session.commit()
-      msg = Message(sender=("Noufal Rahman", "noufal@gmail.com"), recipients=[user.email])
+      msg = Message(sender="noufal24rahman@gmail.com", recipients=[user.email])
       msg.html = mail_template
       mail.send(msg)
     except exc.IntegrityError:
@@ -124,6 +124,8 @@ class UserAPI(Resource):
       if fake_user is None:
         error_msg = "Email already exists. Please use a different Email ID or login with this Email ID"
       raise DuplicateError(code=error_code, emsg=error_msg)
+    except Exception as e:
+      print(e)
     else:
       return 200
     
