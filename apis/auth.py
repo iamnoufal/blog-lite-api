@@ -14,21 +14,6 @@ auth_input_fields.add_argument("user_id")
 auth_input_fields.add_argument("email")
 auth_input_fields.add_argument('password')
 
-feed_output_fields = {
-  "posts": fields.List(fields.Nested({
-    "post_id": fields.String, 
-    "title": fields.String, 
-    "description": fields.String,
-    "created": fields.String,
-    "modified": fields.String,
-    "user": fields.Nested({
-      "user_id": fields.String,
-      "name": fields.String,
-      "email": fields.String,   
-    })
-  }))
-}
-
 class AuthAPI(Resource):
   
   def post(self):

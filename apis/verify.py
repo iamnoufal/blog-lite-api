@@ -19,7 +19,7 @@ class VerifyAPI(Resource):
     try: 
       user = User.query.filter_by(user_id = user_id).one()
       if len(user.fs_uniquifier) > 6:
-        return 200, "User already verified"
+        return "User already verified"
     except exc.NoResultFound:
       raise NotFoundError(code = 404, emsg = "User ID doesn't exist on our database.")
     else:
@@ -27,7 +27,7 @@ class VerifyAPI(Resource):
       msg = Message(subject="Verify your account | Blog Lite", recipients=[user.email], sender="noufal24rahman@gmail.com")
       msg.html = mail_template
       mail.send(msg)
-      return 200, "Verification mail sent"
+      return 200
 
   def post(self, user_id):
     try: 
