@@ -1,5 +1,5 @@
-env
+env*
+.*
 config.py
 *.bat
-.db
 __pycache__
