@@ -4,6 +4,8 @@ from flask_restful import Api
 from application.db import db
 from application.models import *
 from application.config import LocalDevelopmentConfig
+from application.workers import *
+from tasks import test
 from flask_cors import CORS
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
@@ -12,7 +14,17 @@ app.config.from_object(LocalDevelopmentConfig)
 db.init_app(app)
 api = Api(app)
 CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
+celery.conf.update(
+  broker_url = app.config['CELERY_BROKER_URL'],
+  result_backend = app.config['CELERY_DATABASE_URL']
+)
+celery.Task = ContextTask
 app.app_context().push()
+
+@app.route('/test')
+def hello():
+  job = test.test.delay()
+  return str(job), 200
 
 from apis.user import UserAPI
 from apis.auth import AuthAPI
