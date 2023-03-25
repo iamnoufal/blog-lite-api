@@ -8,6 +8,8 @@ from application.responses import *
 from application.auth import authenticate
 from application.mail import mail
 
+from application.tasks import *
+
 # from templates.mail import createAccount
 
 from sqlalchemy import exc
@@ -109,13 +111,14 @@ class UserAPI(Resource):
     user.created_on = str(datetime.today())[:16]
     user.last_login = str(datetime.today())[:16]
     user.fs_uniquifier = ''.join(random.choices(string.digits, k=6))
-    mail_template = render_template('verify-account.html', user = user)
+    # mail_template = render_template('verify-account.html', user = user)
     try:
       db.session.add(user)
       db.session.commit()
-      msg = Message(sender="noufal24rahman@gmail.com", recipients=[user.email])
-      msg.html = mail_template
-      mail.send(msg)
+      job = verification_email.delay({user.user_id, user.name, user.email, user.fs_uniquifier})
+      # msg = Message(sender="noufal24rahman@gmail.com", recipients=[user.email])
+      # msg.html = mail_template
+      # mail.send(msg)
     except exc.IntegrityError:
       db.session.rollback()
       error_msg = "User ID already exists. Please try a different User ID or login with this User ID"
