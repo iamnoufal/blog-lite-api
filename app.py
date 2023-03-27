@@ -21,8 +21,6 @@ celery.conf.update(
 celery.Task = ContextTask
 app.app_context().push()
 
-from application.routes import *
-
 from apis.user import UserAPI
 from apis.auth import AuthAPI
 from apis.post import PostAPI

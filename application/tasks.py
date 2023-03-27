@@ -9,12 +9,12 @@ from celery.schedules import crontab
 
 from weasyprint import HTML
 
+import requests
+
 from .mail import mail
 from .workers import celery
 from .models import *
 from .db import db
-
-from apis.user import UserAPI
 
 @celery.task()
 def verification_email(user_id, name, email, otp):
@@ -25,8 +25,7 @@ def verification_email(user_id, name, email, otp):
 
 @celery.task()
 def export_content(user_id):
-  user = UserAPI()
-  data = user.get(user_id)
+  data = requests.get('/api/user/'+user_id)
   user_data = dict(data)
   mail_template = render_template('export.html', user = user_data)
   msg = Message(sender="noufal24rahman@gmail.com", recipients=[user_data['email']], subject="Export content | Blog Lite")
@@ -104,9 +103,6 @@ def send_remainders():
   return {'task': 'remainders'}
 
 @celery.on_after_finalize.connect
-def send_monthly_report(sender, **kwargs):
+def schedule_tasks(sender, **kwargs):
   sender.add_periodic_task(crontab(hour=1, day_of_month=1), create_report.s(), name="Send monthly report")
-
-@celery.on_after_finalize.connect
-def send_remainders(sender, **kwargs):
-  sender.add_periodic_task(crontab(day_of_month="*", hour=20), send_remainders(), name="Send Remainder everyday")
+  sender.add_periodic_task(crontab(hour=15, minute=5), send_remainders(), name="Send Remainder everyday")
