@@ -12,5 +12,4 @@ class SearchAPI(Resource):
     users = User.query.filter(User.name.like('%'+pattern+'%')).all()
     for i in users:
       resp.append({'user_id': i.user_id, 'name': i.name})
-    print(users)
     return { 'users': resp }

@@ -111,14 +111,10 @@ class UserAPI(Resource):
     user.created_on = str(datetime.today())[:16]
     user.last_login = str(datetime.today())[:16]
     user.fs_uniquifier = ''.join(random.choices(string.digits, k=6))
-    # mail_template = render_template('verify-account.html', user = user)
     try:
       db.session.add(user)
       db.session.commit()
-      job = verification_email.delay({user.user_id, user.name, user.email, user.fs_uniquifier})
-      # msg = Message(sender="noufal24rahman@gmail.com", recipients=[user.email])
-      # msg.html = mail_template
-      # mail.send(msg)
+      verification_email.delay(user_id = user.user_id, name = user.name, email = user.email, otp = user.fs_uniquifier)
     except exc.IntegrityError:
       db.session.rollback()
       error_msg = "User ID already exists. Please try a different User ID or login with this User ID"
@@ -128,7 +124,7 @@ class UserAPI(Resource):
         error_msg = "Email already exists. Please use a different Email ID or login with this Email ID"
       raise DuplicateError(code=error_code, emsg=error_msg)
     except Exception as e:
-      print(e)
+      raise e
     else:
       return 200
     

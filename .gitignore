@@ -5,3 +5,6 @@ __pycache__
 .db
 *.bat
 *.json
+*.dat
+*.dir
+*.bak

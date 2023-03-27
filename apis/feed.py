@@ -3,8 +3,6 @@ from flask import request
 from sqlalchemy import exc
 from application.models import *
 from application.responses import *
-from .post import PostAPI
-
 
 user_output_fields = {
   "user_id": fields.String,
@@ -41,7 +39,6 @@ class FeedAPI(Resource):
         except exc.NoResultFound:
           pass
         else:
-          postapi = PostAPI()
           for j in following_user.posts:
             post = Post.query.filter_by(post_id = j.post_id).one()
             posts.append(post)

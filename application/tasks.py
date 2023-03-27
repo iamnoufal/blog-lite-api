@@ -3,11 +3,15 @@ from flask_mail import Message
 
 from sqlalchemy import exc
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from celery.schedules import crontab
+
+from weasyprint import HTML
 
 from .mail import mail
 from .workers import celery
-from .models import Post
+from .models import *
 from .db import db
 
 from apis.user import UserAPI
@@ -28,9 +32,8 @@ def export_content(user_id):
   msg = Message(sender="noufal24rahman@gmail.com", recipients=[user_data['email']], subject="Export content | Blog Lite")
   msg.html = mail_template
   msg.attach("blog_lite_export_{}.json".format(user_data), 'application/json', json.dumps(data, indent=2))
-  # mail.send(msg)
-  print("MAIL SENT TO", user_data['name'], user_data['email'])
-  return {"name": user_data['name'], "email": user_data['email']}
+  mail.send(msg)
+  return {"name": user_data['name'], "email": user_data['email'], "task": "export"}
 
 @celery.task()
 def import_content(data):
@@ -58,4 +61,52 @@ def import_content(data):
       post.created = data['created']
       post.modified = datetime.now()[16:]
       db.session.commit()
-  return "DONE IMPORT"
+  mail_template = render_template('import.html', name = data['name'])
+  msg = Message(sender="noufal24rahman@gmail.com", recipients=[data['email']], subject="Import content successful | Blog Lite")
+  msg.html = mail_template
+  mail.send(msg)
+  return {"name": data['name'], "email": data['email'], "task": "import"}
+
+@celery.task()
+def create_report():
+  users = User.query.all()
+  for user in users:
+    authors = {}
+    posts = db.session.query(Post).filter(Post.created >= datetime.today().replace(day=1)).all()
+    for post in posts:
+      author = User.query.filter_by(user_id = post.user_id).one()
+      authors[post.user_id] = author.name
+    content = render_template("report.html", data = user, posts = posts, authors = authors)
+    report = HTML(string=content)
+    print('created report for '+user.email)
+    print("send report to "+user.email)
+    report_file = report.write_pdf()
+    msg = Message(sender="noufal24rahman@gmail.com", recipients=[user.email], subject='Summary Snapshot | Blog Lite')
+    print("message created")
+    mail_template = render_template('report-mail.html', name = user.name)
+    print("mail template created")
+    msg.html = mail_template
+    print("mail template attached")
+    msg.attach("{}_blog_lite_monthly_report.pdf".format(user.user_id), 'application/pdf', report_file)
+    print("mail report attached")
+    mail.send(msg)
+    print("mail send")
+  return {"task": "create monthly report"}
+
+@celery.task()
+def send_remainders():
+  users = User.query.all()
+  for user in users:
+    if datetime.strptime(user.last_login, '%Y-%m-%d %H:%M') < (datetime.today() - timedelta(days=1)):
+      msg = Message(sender="noufal24rahman@gmail.com", recipients=[user.email], subject="We miss you! | Blog Lite")
+      msg.html = render_template("remainder.html", name = user.name)
+      mail.send(msg)
+  return {'task': 'remainders'}
+
+@celery.on_after_finalize.connect
+def send_monthly_report(sender, **kwargs):
+  sender.add_periodic_task(crontab(hour=1, day_of_month=1), create_report.s(), name="Send monthly report")
+
+@celery.on_after_finalize.connect
+def send_remainders(sender, **kwargs):
+  sender.add_periodic_task(crontab(day_of_month="*", hour=20), send_remainders(), name="Send Remainder everyday")

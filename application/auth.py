@@ -29,6 +29,5 @@ def authenticate(cookie):
     return False, "No user found with the signed in User ID. Please login again."
   else:
     if user.fs_uniquifier == token:
-      print("authenticated")
       return True, user_id
     return False, 'Auth Token is invalid'

@@ -24,12 +24,7 @@ class VerifyAPI(Resource):
     except exc.NoResultFound:
       raise NotFoundError(code = 404, emsg = "User ID doesn't exist on our database.")
     else:
-      # mail_template = render_template('verify-account.html', user = user)
-      # msg = Message(subject="Verify your account | Blog Lite", recipients=[user.email], sender="noufal24rahman@gmail.com")
-      # msg.html = mail_template
-      # mail.send(msg)
       job = verification_email.delay(user_id = user.user_id, name = user.name, email = user.email, otp = user.fs_uniquifier)
-
       return 200
 
   def post(self, user_id):
