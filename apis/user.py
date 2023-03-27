@@ -8,9 +8,9 @@ from application.responses import *
 from application.auth import authenticate
 from application.mail import mail
 
-from application.tasks import *
+from application.tasks import verification_email
 
-# from templates.mail import createAccount
+from time import perf_counter, perf_counter_ns
 
 from sqlalchemy import exc
 
@@ -65,6 +65,7 @@ class UserAPI(Resource):
 
   @marshal_with(user_output_fields)
   def get(self, user_id):
+    start = perf_counter_ns()
     try: 
       user = User.query.filter_by(user_id = user_id).one()
       followers, following = [], []
@@ -97,6 +98,8 @@ class UserAPI(Resource):
     except exc.NoResultFound:
       raise NotFoundError(code=404, emsg="User not found")
     else:
+      stop = perf_counter_ns()
+      print(stop-start)
       return user
   
   def post(self):

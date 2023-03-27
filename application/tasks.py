@@ -25,14 +25,14 @@ def verification_email(user_id, name, email, otp):
 
 @celery.task()
 def export_content(user_id):
-  data = requests.get('/api/user/'+user_id)
-  user_data = dict(data)
-  mail_template = render_template('export.html', user = user_data)
-  msg = Message(sender="noufal24rahman@gmail.com", recipients=[user_data['email']], subject="Export content | Blog Lite")
+  user = requests.get('http://127.0.0.1:5000/api/user/'+user_id)
+  data = user.json()
+  mail_template = render_template('export.html', user = data)
+  msg = Message(sender="noufal24rahman@gmail.com", recipients=[data['email']], subject="Export content | Blog Lite")
   msg.html = mail_template
-  msg.attach("blog_lite_export_{}.json".format(user_data), 'application/json', json.dumps(data, indent=2))
+  msg.attach("blog_lite_export_{}.json".format(user_id), 'application/json', json.dumps(data, indent=2))
   mail.send(msg)
-  return {"name": user_data['name'], "email": user_data['email'], "task": "export"}
+  return {"name": data['name'], "email": data['email'], "task": "export"}
 
 @celery.task()
 def import_content(data):
@@ -46,8 +46,8 @@ def import_content(data):
       post.description = i['description']
       post.image = i['image']
       post.user_id = data['user_id']
-      post.created = data['created']
-      post.modified = data['modified']
+      post.created = i['created']
+      post.modified = i['modified']
       try:
         db.session.add(post)
         db.session.commit()
@@ -57,8 +57,8 @@ def import_content(data):
       post.title = i['title']
       post.description = i['description']
       post.image = i['image']
-      post.created = data['created']
-      post.modified = datetime.now()[16:]
+      post.created = i['created']
+      post.modified = str(datetime.now())[:16]
       db.session.commit()
   mail_template = render_template('import.html', name = data['name'])
   msg = Message(sender="noufal24rahman@gmail.com", recipients=[data['email']], subject="Import content successful | Blog Lite")
@@ -77,19 +77,12 @@ def create_report():
       authors[post.user_id] = author.name
     content = render_template("report.html", data = user, posts = posts, authors = authors)
     report = HTML(string=content)
-    print('created report for '+user.email)
-    print("send report to "+user.email)
     report_file = report.write_pdf()
     msg = Message(sender="noufal24rahman@gmail.com", recipients=[user.email], subject='Summary Snapshot | Blog Lite')
-    print("message created")
     mail_template = render_template('report-mail.html', name = user.name)
-    print("mail template created")
     msg.html = mail_template
-    print("mail template attached")
     msg.attach("{}_blog_lite_monthly_report.pdf".format(user.user_id), 'application/pdf', report_file)
-    print("mail report attached")
     mail.send(msg)
-    print("mail send")
   return {"task": "create monthly report"}
 
 @celery.task()

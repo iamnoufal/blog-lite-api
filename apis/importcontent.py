@@ -16,7 +16,7 @@ class ImportContentAPI(Resource):
       data = json.load(file)
       if data['user_id'] == user_id:
         job = import_content.delay(data)
-        return 200
+        return Success()
       else:
         return ValidationError(code=401, emsg="The uploaded JSON file seems to be from a different user.")
     else:
