@@ -1,13 +1,12 @@
 from flask_restful import Resource, fields, marshal_with, reqparse
-from flask import request, render_template
-from flask_mail import Message
+from flask import request
 
 from application.db import db
 from application.models import *
 from application.responses import *
 from application.auth import authenticate
 from application.mail import mail
-
+from application.cache import cache
 from application.tasks import verification_email
 
 from time import perf_counter, perf_counter_ns
@@ -64,6 +63,7 @@ user_output_fields = {
 class UserAPI(Resource):
 
   @marshal_with(user_output_fields)
+  @cache.memoize(1000)
   def get(self, user_id):
     start = perf_counter_ns()
     try: 
@@ -99,7 +99,6 @@ class UserAPI(Resource):
       raise NotFoundError(code=404, emsg="User not found")
     else:
       stop = perf_counter_ns()
-      print(stop-start)
       return user
   
   def post(self):
