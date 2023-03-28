@@ -145,7 +145,19 @@ class UserAPI(Resource):
       except exc.IntegrityError:
         raise DuplicateError(emsg = "User ID exists. Please use a different User ID", code = 400)
       else:
-        return 200
+        return Success()
+    else:
+      raise ValidationError(code=400, emsg=other_user_output_fields)
 
   def delete(self):
-    pass
+    cookie = request.headers.get('Cookie')
+    is_authenticated, user_id = authenticate(cookie)
+    if is_authenticated:
+      post_delete = db.session.query(Post).filter(Post.user_id == user_id).delete()
+      followers_delete = db.session.query(Followers).filter(Followers.from_id == user_id).delete()
+      following_delete = db.session.query(Followers).filter(Followers.to_id == user_id).delete()
+      user_delete = db.session.query(User).filter(User.user_id == user_id).delete()
+      db.session.commit()
+      return Success()
+    else:
+      raise ValidationError(code=400, emsg=other_user_output_fields)
