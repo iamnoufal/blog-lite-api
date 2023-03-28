@@ -14,7 +14,7 @@ class User(model):
   image = col(db.String)
   fs_uniquifier = col(db.String(128), unique=True, nullable=False) 
   about = col(db.String)
-  posts = db.relationship("Post")
+  posts = db.relationship("Post", lazy="subquery")
   followers = db.relationship("Followers", foreign_keys="Followers.to_id")
   following = db.relationship("Followers", foreign_keys="Followers.from_id")
 

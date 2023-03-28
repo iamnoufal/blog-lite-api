@@ -3,6 +3,7 @@ from flask import request
 from sqlalchemy import exc
 from application.models import *
 from application.responses import *
+from application.cache import cache
 
 user_output_fields = {
   "user_id": fields.String,
@@ -26,6 +27,7 @@ feed_output_fields = {
 
 class FeedAPI(Resource):
   @marshal_with(feed_output_fields)
+  @cache.memoize(1000)
   def get(self, user_id):
     try:
       user = User.query.filter_by(user_id = user_id).first()

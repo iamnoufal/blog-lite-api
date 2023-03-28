@@ -8,6 +8,7 @@ from application.db import db
 from application.models import *
 from application.responses import *
 from application.auth import authenticate
+from application.cache import cache
 
 from sqlalchemy import exc
 
@@ -33,6 +34,7 @@ post_output_fields = {
 class PostAPI(Resource):
 
   @marshal_with(post_output_fields)
+  @cache.memoize(1000)
   def get(self, post_id):
     try: 
       post = Post.query.filter_by(post_id = post_id).one()

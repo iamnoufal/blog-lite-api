@@ -11,10 +11,11 @@ from weasyprint import HTML
 
 import requests
 
-from .mail import mail
-from .workers import celery
+from application.db import db
+from application.mail import mail
+from application.workers import celery
+
 from .models import *
-from .db import db
 
 @celery.task()
 def verification_email(user_id, name, email, otp):

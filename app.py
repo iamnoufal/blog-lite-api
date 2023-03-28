@@ -1,12 +1,16 @@
 import os
+
 from flask import Flask
-from flask_restful import Api
-from application.db import db
-from application.models import *
-from application.config import LocalDevelopmentConfig
-from application.workers import *
-# from application.tasks import *
 from flask_cors import CORS
+from flask_restful import Api
+
+from application.db import db
+from application.mail import mail
+# from application.api import api
+from application.cache import cache
+from application.workers import celery, ContextTask
+
+from application.config import LocalDevelopmentConfig
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
@@ -14,6 +18,8 @@ app.config.from_object(LocalDevelopmentConfig)
 db.init_app(app)
 api = Api(app)
 CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
+mail.init_app(app)
+cache.init_app(app)
 celery.conf.update(
   broker_url = app.config['CELERY_BROKER_URL'],
   result_backend = app.config['CELERY_DATABASE_URL']
@@ -42,4 +48,4 @@ api.add_resource(ExportContentAPI, '/api/export')
 api.add_resource(ImportContentAPI, '/api/import')
 
 if __name__ == "__main__":
-  app.run(host="0.0.0.0", debug=True)
+  app.run()
