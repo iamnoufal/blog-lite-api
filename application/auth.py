@@ -1,6 +1,5 @@
 from .models import User
 from sqlalchemy import exc
-from .responses import ValidationError
 
 def readcookie(cookie):
   try:

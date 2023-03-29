@@ -1,4 +1,4 @@
-from flask_restful import Resource, reqparse, fields
+from flask_restful import Resource, reqparse
 from flask import request
 
 from sqlalchemy import exc
