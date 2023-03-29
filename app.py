@@ -6,7 +6,6 @@ from flask_restful import Api
 
 from application.db import db
 from application.mail import mail
-# from application.api import api
 from application.cache import cache
 from application.workers import celery, ContextTask
 
