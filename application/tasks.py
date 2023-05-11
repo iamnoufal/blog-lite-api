@@ -17,6 +17,8 @@ from application.workers import celery
 
 from .models import *
 
+celery.conf.timezone = 'Asia/Kolkata'
+
 @celery.task()
 def verification_email(user_id, name, email, otp):
   mail_template = render_template('verify-account.html', user_id = user_id, name = name, otp = otp)
@@ -96,7 +98,12 @@ def send_remainders():
       mail.send(msg)
   return {'task': 'remainders'}
 
+@celery.task()
+def test():
+  print("+++++THIS IS A SCHEDULED TASK++++++")
+  return "helllo"
+
 @celery.on_after_finalize.connect
 def schedule_tasks(sender, **kwargs):
-  sender.add_periodic_task(crontab(hour=1, day_of_month=1), create_report.s(), name="Send monthly report")
-  sender.add_periodic_task(crontab(hour=15, minute=5), send_remainders(), name="Send Remainder everyday")
+  sender.add_periodic_task(50.0, send_remainders.s(), name="Send monthly report")
+  # sender.add_periodic_task(100.0, create_report.s(), name="Send monthly report")

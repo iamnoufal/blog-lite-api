@@ -8,7 +8,6 @@ from application.db import db
 from application.mail import mail
 from application.cache import cache
 from application.workers import celery, ContextTask
-
 from application.config import LocalDevelopmentConfig
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
