@@ -4,7 +4,7 @@ Project developed by Noufal Rahman [21f1005287](mailto:21f1005287@ds.study.iitm.
 
 ## Project Structure:
 - ### /.db/
-  - db.sqlite3 - Not included. database for the app
+  - db.sqlite3 - Database folder and database automatically created by the code
 - ### /apis/
   - [auth.py](apis/auth.py) - Contains `AuthAPI` for login and profile
   - [exportcontent.py](apis/exportcontent.py) - Contains `ExportContantAPI` with `GET` method for exporting content to JSON and send it to mail
